@@ -1,5 +1,6 @@
 # https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from download_svc import DownloadService, urlTable
 
@@ -49,10 +50,27 @@ class AnalyzeService(DownloadService):
                 weight.append(currW)
 
                 #print("%s: diff: %d, share: %d, price per share: %f" % (i, sdiff, currS, pricePerShare))
-
+            symbols = [str(symbol) for symbol in symbols]
             myDF = pd.DataFrame({'symbol': symbols, 'delta': deltas, 'share': shares, 'price': prices, 'weight': weight})
             myDF = myDF.sort_values(by=['delta', 'symbol'], axis=0, ascending=[False, True], inplace=False,
                              kind='quicksort', ignore_index=True, key=None)
 
             print(myDF)
+            
+
+            # Calculate delta * price [aka money]
+            myDF['delta_price'] = myDF['delta'] * myDF['price']/1000000
+            myDF = myDF[myDF['delta_price'] != 0]
+
+            #displays data
+            plt.figure(figsize=(10, 6))
+            plt.bar(myDF['symbol'], myDF['delta_price'])
+            plt.xlabel('Symbol')
+            plt.ylabel('Money Spent ( in $millions)')
+            plt.title(("Fund %s:" % url)[62:-2])
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+            plt.show()
+
+                    
             print("pause")
